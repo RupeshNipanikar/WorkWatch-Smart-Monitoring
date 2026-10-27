@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  background-color: #020617 !important;
+  color: #f8fafc;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  color-scheme: dark;
+}
+
+body {
+  overflow-x: hidden;
+  background-color: #020617 !important;
+}
+
+/* Eliminate GPU composite layer-squashing flickering on clickable elements */
+button, [role="button"], a {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@layer base {
+  html {
+    background-color: #020617;
+    color: #f8fafc;
+    color-scheme: dark;
+  }
+  body {
+    background-color: #020617;
+    color: #f8fafc;
+    color-scheme: dark;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+.animate-scan {
+  animation: scan 2s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
