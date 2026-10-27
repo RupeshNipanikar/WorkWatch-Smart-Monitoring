@@ -102,17 +102,20 @@ export const EmployeeDashboard: React.FC<{ user: UserProfile; onLogout: () => vo
 
   useEffect(() => {
     const fetchLeaves = async () => {
-      const { data } = await supabase.from('leave_requests').select('*').eq('userid', user.uid);
+      let { data } = await supabase.from('leave_requests').select('*').eq('userId', user.uid);
+      if (!data || data.length === 0) {
+        const { data: d2 } = await supabase.from('leave_requests').select('*').eq('userid', user.uid);
+        if (d2 && d2.length > 0) data = d2;
+      }
       if (data) {
         setLeaveRequests(data.map((l: any) => ({
           ...l,
-          // Normalize to camelCase for UI, DB stores lowercase
-          userId: l.userid || l.userId,
-          employeeName: l.employeename || l.employeeName,
-          employeeCode: l.employeecode || l.employeeCode,
-          startDate: l.startdate || l.startDate,
-          endDate: l.enddate || l.endDate,
-          leaveType: l.leave_type || l.leaveType || 'unpaid',
+          userId: l.userId || l.userid,
+          employeeName: l.employeeName || l.employeename,
+          employeeCode: l.employeeCode || l.employeecode,
+          startDate: l.startDate || l.startdate,
+          endDate: l.endDate || l.enddate,
+          leaveType: l.leaveType || l.leave_type || 'unpaid',
           isPaid: l.isPaid !== undefined ? l.isPaid : (l.leave_type === 'paid')
         })));
         
@@ -2621,18 +2624,36 @@ export const EmployeeDashboard: React.FC<{ user: UserProfile; onLogout: () => vo
       return;
     }
     try {
-      const payload = {
-        userid: user.uid,
-        employeename: user.displayName || '',
-        employeecode: user.specialCode || '',
-        startdate: leaveData.startDate,
-        enddate: leaveData.endDate,
+      // Primary payload matching Supabase schema (userId, employeeName, employeeCode, startDate, endDate)
+      const payload: any = {
+        userId: user.uid,
+        employeeName: user.displayName || '',
+        employeeCode: user.specialCode || '',
+        startDate: leaveData.startDate,
+        endDate: leaveData.endDate,
         reason: leaveData.reason,
         status: 'pending',
         timestamp: new Date().toISOString()
       };
 
-      const { error } = await supabase.from('leave_requests').insert(payload);
+      let { error } = await supabase.from('leave_requests').insert(payload);
+      
+      // Fallback: If database schema has lowercase columns
+      if (error && error.message?.toLowerCase().includes('column')) {
+        const fallbackPayload = {
+          userid: user.uid,
+          employeename: user.displayName || '',
+          employeecode: user.specialCode || '',
+          startdate: leaveData.startDate,
+          enddate: leaveData.endDate,
+          reason: leaveData.reason,
+          status: 'pending',
+          timestamp: new Date().toISOString()
+        };
+        const res = await supabase.from('leave_requests').insert(fallbackPayload);
+        error = res.error;
+      }
+
       if (error) throw error;
 
       try {
@@ -2655,11 +2676,18 @@ export const EmployeeDashboard: React.FC<{ user: UserProfile; onLogout: () => vo
 
       alert('Leave request submitted successfully!');
       setShowLeaveModal(false);
-      const { data } = await supabase.from('leave_requests').select('*').eq('userid', user.uid);
+      let { data } = await supabase.from('leave_requests').select('*').eq('userId', user.uid);
+      if (!data || data.length === 0) {
+        const { data: d2 } = await supabase.from('leave_requests').select('*').eq('userid', user.uid);
+        if (d2 && d2.length > 0) data = d2;
+      }
       if (data) setLeaveRequests(data.map((l: any) => ({
         ...l,
-        userId: l.userid, employeeName: l.employeename,
-        startDate: l.startdate, endDate: l.enddate
+        userId: l.userId || l.userid,
+        employeeName: l.employeeName || l.employeename,
+        employeeCode: l.employeeCode || l.employeecode,
+        startDate: l.startDate || l.startdate,
+        endDate: l.endDate || l.enddate
       })));
     } catch (err: any) {
       alert(`Failed to submit leave request: ${err.message}`);
