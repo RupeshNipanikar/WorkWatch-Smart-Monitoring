@@ -133,3 +133,10 @@ This project demonstrates practical experience with:
 
 ## 📄 License
 
+This project is licensed under the [MIT License](LICENSE).
+
+See the [LICENSE](LICENSE) file for the full license text.
+
+## 📄 License
+
+This project is licensed under the MIT License. See the  file for details.
