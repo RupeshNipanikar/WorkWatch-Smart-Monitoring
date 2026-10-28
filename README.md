@@ -11,6 +11,9 @@ A web-based work monitoring platform designed to help teams manage work sessions
 - **Demo Employee Name:** `Demo Employee`
 - **Demo Employee Password:** `123456`
 
+> **Note:** Access Admin Account First to create your own employee from Employee tab, so that you can sign in as an employee to explore employee Panel.
+
+
 > **Note:** The demo credentials are intended for recruiters, reviewers, and friends to explore the application. Please use the demo account rather than entering personal information.
 
 ## 📌 Overview
